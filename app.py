@@ -1,120 +1,67 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from werkzeug.utils import secure_filename
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from flasgger import Swagger
+from dotenv import load_dotenv
 import os
-from datetime import datetime
-from forms import ResumeForm, QuestionnaireForm
-from pdf_processor import PDFProcessor
-from payment_processor import PaymentProcessor
+from blueprints import blueprints
+from models import db
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///resume_analyzer.db'
+# Load environment variables
+load_dotenv()
+
+app = Flask(__name__, static_folder='frontend/build', static_url_path='')
+CORS(app)
+
+# Initialize Swagger for automatic API documentation
+swagger = Swagger(app, template={
+    "info": {
+        "title": "Resume Analyzer API",
+        "version": "1.0",
+        "description": "Endpoints for uploading resumes, analyzing, and retrieving results."
+    }
+})
+
+# Configuration
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key')
 app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///resume_analyzer.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
-db = SQLAlchemy(app)
+# Initialize SQLAlchemy
+db.init_app(app)
 
-# Ensure upload directory exists
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    resumes = db.relationship('Resume', backref='user', lazy=True)
-
-class Resume(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    filename = db.Column(db.String(255), nullable=False)
-    upload_date = db.Column(db.DateTime, default=datetime.utcnow)
-    processed = db.Column(db.Boolean, default=False)
-    questionnaire = db.relationship('Questionnaire', backref='resume', uselist=False)
-
-class Questionnaire(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    resume_id = db.Column(db.Integer, db.ForeignKey('resume.id'), nullable=False)
-    current_status = db.Column(db.String(255))
-    job_type = db.Column(db.String(255))
-    salary_expectation = db.Column(db.Float)
-    preferred_location = db.Column(db.String(255))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
+# Create tables if they do not exist
 with app.app_context():
     db.create_all()
 
+# Register blueprints
+for bp in blueprints:
+    app.register_blueprint(bp)
+
+# Configure OpenAI
+try:
+    import openai
+    openai.api_key = os.environ.get('OPENAI_API_KEY')
+    print("OpenAI API key configured successfully")
+except Exception as e:
+    print(f"Error configuring OpenAI: {str(e)}")
+
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return app.send_static_file('index.html')
 
-@app.route('/upload', methods=['GET', 'POST'])
-def upload_resume():
-    form = ResumeForm()
-    if form.validate_on_submit():
-        if 'resume' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        
-        file = request.files['resume']
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-            
-        if file:
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-            
-            # Create new resume entry
-            new_resume = Resume(filename=filename, user_id=1)  # TODO: Implement user authentication
-            db.session.add(new_resume)
-            db.session.commit()
-            
-            flash('Resume uploaded successfully!')
-            return redirect(url_for('questionnaire', resume_id=new_resume.id))
-    
-    return render_template('upload.html', form=form)
-
-@app.route('/questionnaire/<int:resume_id>', methods=['GET', 'POST'])
-def questionnaire(resume_id):
-    form = QuestionnaireForm()
-    resume = Resume.query.get_or_404(resume_id)
-    
-    if form.validate_on_submit():
-        new_questionnaire = Questionnaire(
-            resume_id=resume_id,
-            current_status=form.current_status.data,
-            job_type=form.job_type.data,
-            salary_expectation=form.salary_expectation.data,
-            preferred_location=form.preferred_location.data
-        )
-        db.session.add(new_questionnaire)
-        db.session.commit()
-        
-        flash('Questionnaire submitted successfully!')
-        return redirect(url_for('payment', resume_id=resume_id))
-    
-    return render_template('questionnaire.html', form=form)
-
-@app.route('/payment/<int:resume_id>', methods=['GET', 'POST'])
-def payment(resume_id):
-    resume = Resume.query.get_or_404(resume_id)
-    payment_processor = PaymentProcessor()
-    
-    if request.method == 'POST':
-        try:
-            payment_intent = payment_processor.create_payment_intent(
-                amount=1000,  # $10.00
-                currency='usd'
-            )
-            return jsonify({
-                'clientSecret': payment_intent['client_secret']
-            })
-        except Exception as e:
-            return jsonify(error=str(e)), 403
-    
-    return render_template('payment.html', resume_id=resume_id)
+# Catch-all to support client-side routing (React Router)
+# Any 404 that is NOT an API nor static asset should return index.html so the
+# frontend can handle the route, avoiding blank 404 pages on refresh or direct
+# link (e.g. /results/123).
+@app.errorhandler(404)
+def spa_fallback(e):
+    if request.path.startswith('/api') or request.path.startswith('/uploads'):
+        # Real 404 for API or upload resources
+        return jsonify({'error': 'Not found'}), 404
+    # Otherwise serve the SPA entrypoint
+    return app.send_static_file('index.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

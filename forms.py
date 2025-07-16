@@ -1,10 +1,10 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, FloatField, SelectField, SubmitField
+from wtforms import StringField, FloatField, SelectField, SubmitField, FileField
 from wtforms.validators import DataRequired, Email, NumberRange
 
 class ResumeForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
-    resume = StringField('Resume', validators=[DataRequired()])
+    resume = FileField('Resume', validators=[DataRequired()])
     submit = SubmitField('Upload Resume')
 
 class QuestionnaireForm(FlaskForm):

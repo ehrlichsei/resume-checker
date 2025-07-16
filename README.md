@@ -1,71 +1,83 @@
-# Resume Analyzer Web Application
+# Resume Analyzer
 
-A web application for resume analysis with PDF processing, questionnaire functionality, and payment integration.
+A modern web application that analyzes resumes using OpenAI's API and provides detailed insights about skills, experience, and education.
 
 ## Features
 
 - Upload PDF resumes
-- Fill out job application questionnaire
-- Resume analysis and processing
-- Secure payment integration
-- User-friendly interface
+- AI-powered resume analysis using OpenAI
+- Detailed skill and experience breakdown
+- Education history analysis
+- Questionnaire for job preferences
+- Modern React frontend with Material-UI
 
 ## Setup Instructions
+
+### Backend Setup
 
 1. Create a virtual environment:
 ```bash
 python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-2. Activate the virtual environment:
-   - On Windows:
-   ```bash
-   .\venv\Scripts\activate
-   ```
-   - On Unix or MacOS:
-   ```bash
-   source venv/bin/activate
-   ```
-
-3. Install Python dependencies:
+2. Install backend dependencies:
 ```bash
-pip install -r requirements.txt
+pip install flask flask-sqlalchemy werkzeug python-dotenv openai PyPDF2
 ```
 
-4. Create a `.env` file with your Stripe API keys:
+3. Set up environment variables:
+Create a `.env` file in the root directory with:
 ```
-STRIPE_SECRET_KEY=your_secret_key
-STRIPE_PUBLISHABLE_KEY=your_publishable_key
-SECRET_KEY=your_application_secret_key
+SECRET_KEY=your-secret-key-here
+OPENAI_API_KEY=your-openai-api-key-here
 ```
 
-5. Run the application:
+4. Run the backend:
 ```bash
 python app.py
 ```
 
-6. Open your browser and navigate to `http://localhost:5000`
+### Frontend Setup
+
+1. Install frontend dependencies:
+```bash
+cd frontend
+npm install
+```
+
+2. Build the frontend:
+```bash
+npm run build
+```
+
+3. The frontend build will be automatically served by the Flask backend.
+
+## Running the Application
+
+1. Ensure both backend and frontend are set up as described above.
+2. Start the Flask backend:
+```bash
+python app.py
+```
+3. Open your browser and navigate to `http://localhost:5000`
+
+## API Endpoints
+
+- POST `/api/upload` - Upload a resume
+- GET `/api/resume/:id` - Get resume analysis
+- POST `/api/questionnaire/:id` - Submit questionnaire
 
 ## Project Structure
 
-- `app.py`: Main Flask application
-- `forms.py`: WTForms definitions
-- `pdf_processor.py`: PDF processing and analysis
-- `payment_processor.py`: Stripe payment integration
-- `templates/`: HTML templates
-- `static/`: CSS, JavaScript, and other static files
-- `uploads/`: Directory for uploaded resumes
-
-## Requirements
-
-- Python 3.8+
-- Flask
-- SQLAlchemy
-- Stripe API keys
-- SQLite (or other supported database)
-
-## Deactivating the Virtual Environment
-
-To deactivate the virtual environment when you're done:
-```bash
-deactivate
+```
+resume_analyzer/
+├── app.py                # Flask backend
+├── frontend/             # React frontend
+│   ├── src/
+│   │   ├── components/   # React components
+│   │   └── pages/       # Page components
+│   └── package.json
+├── uploads/              # Resume uploads
+├── .env                  # Environment variables
+└── requirements.txt      # Python dependencies

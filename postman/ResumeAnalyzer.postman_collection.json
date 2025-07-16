@@ -1,0 +1,54 @@
+{
+  "info": {
+    "_postman_id": "d14aaf2e-1234-4b4a-8ad7-" ,
+    "name": "Resume Analyzer API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Collection to test Resume Analyzer endpoints including profile-picture extraction"
+  },
+  "item": [
+    {
+      "name": "Get profile picture",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/resumes/{{resume_id}}/profile-picture",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "resumes", "{{resume_id}}", "profile-picture"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Content-Type is image\", function () {",
+              "    pm.expect(pm.response.headers.get('Content-Type')).to.match(/image\//);",
+              "});",
+              "",
+              "pm.test(\"Response has body\", function () {",
+              "    pm.expect(pm.response.size()).to.be.above(0);",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "resume_id",
+      "value": "1",
+      "type": "default",
+      "description": "ID of the resume to test with"
+    }
+  ]
+}

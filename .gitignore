@@ -24,6 +24,7 @@ wheels/
 venv/
 ENV/
 .env
+venv312/
 
 # IDE
 .idea/
@@ -44,3 +45,4 @@ uploads/
 # Test
 test/
 
+node_modules
