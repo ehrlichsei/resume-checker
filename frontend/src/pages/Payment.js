@@ -26,6 +26,7 @@ const Payment = () => {
   const [debugInfo, setDebugInfo] = useState([]);
   const cardElementRef = useRef(null);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     console.log('Payment component mounted');
     fetchPaymentIntent();
