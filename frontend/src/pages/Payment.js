@@ -10,8 +10,6 @@ import {
   Alert,
   TextField,
   Stack,
-  Snackbar,
-  Alert as MuiAlert,
 } from '@mui/material';
 import { loadStripe } from '@stripe/stripe-js';
 import api from '../api';
@@ -25,21 +23,20 @@ const Payment = () => {
   const [error, setError] = useState('');
   const [clientSecret, setClientSecret] = useState('');
   const [amount, setAmount] = useState(100); // $1.00
-  const [paymentStatus, setPaymentStatus] = useState('idle');
   const [debugInfo, setDebugInfo] = useState([]);
   const cardElementRef = useRef(null);
 
   useEffect(() => {
     console.log('Payment component mounted');
     fetchPaymentIntent();
-  }, []);
+  }, []); // eslint-disable-next-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (clientSecret) {
       console.log('Client secret received:', clientSecret);
       initializeStripeElements();
     }
-  }, [clientSecret]);
+  }, [clientSecret]); // eslint-disable-next-line react-hooks/exhaustive-deps
 
   const addDebugInfo = (message, data = null) => {
     setDebugInfo(prev => [
@@ -121,7 +118,6 @@ const Payment = () => {
 
     setLoading(true);
     setError('');
-    setPaymentStatus('processing');
 
     try {
       const stripe = await stripePromise;
@@ -150,18 +146,15 @@ const Payment = () => {
         console.error('Payment error:', stripeError);
         addDebugInfo('Payment error', stripeError);
         setError(stripeError.message || 'Payment failed. Please try again.');
-        setPaymentStatus('failed');
       } else {
         console.log('Payment successful:', paymentIntent);
         addDebugInfo('Payment successful', paymentIntent);
-        setPaymentStatus('success');
         navigate(`/results/${slug}`);
       }
     } catch (err) {
       console.error('Payment process error:', err);
       addDebugInfo('Payment process error', err);
       setError('Payment failed. Please try again.');
-      setPaymentStatus('failed');
     } finally {
       setLoading(false);
     }
