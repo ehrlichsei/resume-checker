@@ -64,4 +64,10 @@ def spa_fallback(e):
     return app.send_static_file('index.html')
 
 if __name__ == '__main__':
+    # Development server
     app.run(debug=True)
+else:
+    # Production: Gunicorn will import this app
+    # Make sure the app is bound to the port specified by the PORT environment variable
+    port = int(os.environ.get("PORT", 8000))
+    print(f"Application configured to run on port {port}")
