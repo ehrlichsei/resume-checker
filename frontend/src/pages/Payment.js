@@ -29,14 +29,15 @@ const Payment = () => {
   useEffect(() => {
     console.log('Payment component mounted');
     fetchPaymentIntent();
-  }, []); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); 
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (clientSecret) {
       console.log('Client secret received:', clientSecret);
       initializeStripeElements();
     }
-  }, [clientSecret]); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientSecret]); 
 
   const addDebugInfo = (message, data = null) => {
     setDebugInfo(prev => [
