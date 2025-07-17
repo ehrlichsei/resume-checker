@@ -63,11 +63,10 @@ def spa_fallback(e):
     # Otherwise serve the SPA entrypoint
     return app.send_static_file('index.html')
 
+# This ensures the app runs on the port specified by Render
+port = int(os.environ.get("PORT", 10000))
+host = "0.0.0.0"
+
 if __name__ == '__main__':
     # Development server
-    app.run(debug=True)
-else:
-    # Production: Gunicorn will import this app
-    # Make sure the app is bound to the port specified by the PORT environment variable
-    port = int(os.environ.get("PORT", 8000))
-    print(f"Application configured to run on port {port}")
+    app.run(host=host, port=port, debug=True)
