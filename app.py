@@ -3,6 +3,7 @@ from flask_cors import CORS
 from flasgger import Swagger
 from dotenv import load_dotenv
 import os
+import sys
 from blueprints import blueprints
 from models import db
 
@@ -63,10 +64,14 @@ def spa_fallback(e):
     # Otherwise serve the SPA entrypoint
     return app.send_static_file('index.html')
 
-# This ensures the app runs on the port specified by Render
-port = int(os.environ.get("PORT", 10000))
-host = "0.0.0.0"
-
 if __name__ == '__main__':
-    # Development server
-    app.run(host=host, port=port, debug=True)
+    # Get port from environment variable with fallback to 10000
+    port = int(os.environ.get("PORT", 10000))
+    
+    # Print diagnostic information for debugging
+    print(f"Starting server on port {port}")
+    print(f"Python version: {sys.version}")
+    print(f"Current working directory: {os.getcwd()}")
+    
+    # Run the Flask application (development server)
+    app.run(host="0.0.0.0", port=port, debug=True)
