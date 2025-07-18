@@ -13,4 +13,10 @@ os.environ['FLASK_APP'] = 'app.py'
 from app import app
 
 if __name__ == '__main__':
+    # For local development
     app.run(debug=True)
+else:
+    # For production deployment on Render
+    port = int(os.environ.get("PORT", 8000))
+    print(f"Starting server on port {port}")
+    # This will be executed when imported by gunicorn
