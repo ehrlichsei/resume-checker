@@ -65,8 +65,8 @@ def spa_fallback(e):
     return app.send_static_file('index.html')
 
 if __name__ == '__main__':
-    # Get port from environment variable with fallback to 10000
-    port = int(os.environ.get("PORT", 10000))
+    # Get port from environment variable with fallback to 5000
+    port = int(os.environ.get("PORT", 5000))
     
     # Print diagnostic information for debugging
     print(f"Starting server on port {port}")
