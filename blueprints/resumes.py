@@ -64,6 +64,9 @@ def upload_resume():
 
     if file:
         filename = secure_filename(file.filename)
+        # Ensure the uploads directory exists (important on Render where the
+        # directory may not be present by default)
+        os.makedirs('uploads', exist_ok=True)
         filepath = os.path.join('uploads', filename)
         file.save(filepath)
 
