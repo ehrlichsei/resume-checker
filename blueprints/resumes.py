@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify, send_from_directory, g
 from werkzeug.utils import secure_filename
 from models import db, User, Resume
 from pdf_processor import PDFProcessor
-from photo_analyzer import PhotoAnalyzer
+# from photo_analyzer import PhotoAnalyzer  # temparorily deactivated
 import os
 import smtplib
 from email.message import EmailMessage

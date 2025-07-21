@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from flasgger import Swagger
+# from flasgger import Swagger
 from dotenv import load_dotenv
 import os
 import sys
@@ -14,13 +14,13 @@ app = Flask(__name__, static_folder='frontend/build', static_url_path='')
 CORS(app)
 
 # Initialize Swagger for automatic API documentation
-swagger = Swagger(app, template={
-    "info": {
-        "title": "Resume Analyzer API",
-        "version": "1.0",
-        "description": "Endpoints for uploading resumes, analyzing, and retrieving results."
-    }
-})
+# swagger = Swagger(app, template={
+#     "info": {
+#         "title": "Resume Analyzer API",
+#         "version": "1.0",
+#         "description": "Endpoints for uploading resumes, analyzing, and retrieving results."
+#     }
+# })
 
 # Configuration
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key')

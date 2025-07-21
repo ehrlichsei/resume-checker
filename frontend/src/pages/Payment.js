@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Box,
@@ -26,21 +26,7 @@ const Payment = () => {
   const [debugInfo, setDebugInfo] = useState([]);
   const cardElementRef = useRef(null);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    console.log('Payment component mounted');
-    fetchPaymentIntent();
-  }, []); 
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (clientSecret) {
-      console.log('Client secret received:', clientSecret);
-      initializeStripeElements();
-    }
-  }, [clientSecret]); 
-
-  const addDebugInfo = (message, data = null) => {
+  const addDebugInfo = useCallback((message, data = null) => {
     setDebugInfo(prev => [
       ...prev,
       {
@@ -49,9 +35,9 @@ const Payment = () => {
         data
       }
     ]);
-  };
+  }, []);
 
-  const fetchPaymentIntent = async () => {
+  const fetchPaymentIntent = useCallback(async () => {
     console.log('Fetching payment intent...');
     addDebugInfo('Fetching payment intent');
     try {
@@ -72,9 +58,9 @@ const Payment = () => {
       addDebugInfo('Payment initialization error', err);
       setError('Failed to initialize payment');
     }
-  };
+  }, [amount, addDebugInfo]);
 
-  const initializeStripeElements = async () => {
+  const initializeStripeElements = useCallback(async () => {
     console.log('Initializing Stripe Elements...');
     addDebugInfo('Initializing Stripe Elements');
     try {
@@ -105,7 +91,7 @@ const Payment = () => {
       addDebugInfo('Stripe Elements initialization error', err);
       setError('Failed to initialize Stripe Elements');
     }
-  };
+  }, [addDebugInfo]);
 
   const handlePayment = async () => {
     console.log('Starting payment process...');
@@ -161,6 +147,16 @@ const Payment = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchPaymentIntent();
+  }, [fetchPaymentIntent]);
+
+  useEffect(() => {
+    if (clientSecret) {
+      initializeStripeElements();
+    }
+  }, [clientSecret, initializeStripeElements]);
 
   return (
     <Container maxWidth="md">
