@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useContext, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
   Box,
   Container,
   Paper,
   Typography,
-  Grid,
   Chip,
   LinearProgress,
-  Button,
   Alert,
   MobileStepper,
+  Button,
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ReactMarkdown from 'react-markdown';
@@ -21,7 +20,7 @@ import api from '../api';
 
 const Results = () => {
   const { slug } = useParams();
-  const navigate = useNavigate();
+
   const { lang } = useContext(LangContext);
   const [resume, setResume] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -89,7 +88,7 @@ const Results = () => {
 
   const [activeStep, setActiveStep] = useState(0);
   const maxSteps = sections.length;
-  const [sending, setSending] = useState(false);
+
 
   const handleNext = () => {
     setActiveStep((prev) => Math.min(prev + 1, maxSteps - 1));
@@ -99,17 +98,7 @@ const Results = () => {
     setActiveStep((prev) => Math.max(prev - 1, 0));
   };
 
-  const handleSendPdf = async () => {
-    setSending(true);
-    try {
-      await api.post(`/api/resumes/${slug}/send-pdf`);
-      alert(lang === languages.en ? 'Email sent!' : '邮件已发送！');
-    } catch (e) {
-      alert(e.response?.data?.error || 'Failed');
-    } finally {
-      setSending(false);
-    }
-  };
+
 
   if (loading || isAnalyzing || !analysisMarkdown) {
     return (
@@ -246,40 +235,7 @@ const Results = () => {
           </Typography>
         </Box>
 
-        <Grid container spacing={4}>
-          <Grid item xs={12}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6">
-                {lang === languages.en ? 'Next Steps' : '下一步'}
-              </Typography>
-              <Box sx={{ mt: 2 }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  onClick={() => navigate(`/questionnaire/${slug}`)}
-                  sx={{ mb: 2 }}
-                >
-                  {lang === languages.en ? 'Complete Questionnaire' : '填写问卷'}
-                </Button>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={handleSendPdf}
-                  disabled={sending}
-                >
-                  {sending
-                    ? lang === languages.en
-                      ? 'Sending...'
-                      : '发送中...'
-                    : lang === languages.en
-                    ? 'Email PDF'
-                    : '发送 PDF 到邮箱'}
-                </Button>
-              </Box>
-            </Paper>
-          </Grid>
-        </Grid>
+
       </Paper>
     </Container>
   );
